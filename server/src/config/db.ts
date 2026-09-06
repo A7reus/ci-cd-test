@@ -5,14 +5,9 @@ import { Pool } from "pg";
 export const pool = new Pool({
   host: process.env.DB_HOST || "127.0.0.1",
   port: Number(process.env.DB_PORT || process.env.POSTGRES_PORT || 5432),
-  database:
-    process.env.DB_NAME || process.env.POSTGRES_DB_NAME || "myappdb_dev",
+  database: process.env.DB_NAME || process.env.POSTGRES_DB_NAME || "myappdb_dev",
   user: process.env.DB_USER || process.env.POSTGRES_USER || "postgres",
-  password:
-    process.env.DB_PASSWORD ||
-    process.env.POSTGRES_PASSWD ||
-    process.env.POSTGRES_PASSWORD ||
-    "devpassword123",
+  password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWD || process.env.POSTGRES_PASSWORD || "devpassword123",
 });
 
 export const initDb = async () => {
@@ -34,6 +29,18 @@ export const initDb = async () => {
       email VARCHAR(255) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
       role VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Dhaka'),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Dhaka')
+    );
+  `;
+
+  const marufUsersQuery = `
+    CREATE TABLE IF NOT EXISTS maruf_users (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(100) NOT NULL UNIQUE,
+      email VARCHAR(255) NOT NULL UNIQUE,
+      password VARCHAR(255) NOT NULL,
+      role VARCHAR(20) DEFAULT 'user',
       created_at TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Dhaka'),
       updated_at TIMESTAMP WITH TIME ZONE DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Dhaka')
     );
@@ -66,36 +73,30 @@ export const initDb = async () => {
   `;
 
   const diptaUsersQuery = `
- CREATE TABLE IF NOT EXISTS dipta_users(
-
-    id SERIAL PRIMARY KEY,
-
-    username VARCHAR(100) UNIQUE NOT NULL,
-
-    email VARCHAR(255) UNIQUE NOT NULL,
-
-    password TEXT NOT NULL,
-
-    role VARCHAR(20) DEFAULT 'user',
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-
-);
+    CREATE TABLE IF NOT EXISTS dipta_users(
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role VARCHAR(20) DEFAULT 'user',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 `;
-  
+
   try {
     await pool.query(postsQuery);
     await pool.query(anindyaUsersQuery);
     await pool.query(twahaUsersQuery);
     await pool.query(diptaUsersQuery);
+    await pool.query(marufUsersQuery);
 
     console.log(
       "Database initialized successfully (posts and anindya_users , Dipta_users tables ready).",
     );
     console.log("twaha_users table created successfully");
+    console.log("maruf_users table created successfully");
   } catch (err) {
-    console.error("Error initializing database table:", err);
+    console.error("Error initializing database tables:", err);
   }
 };
