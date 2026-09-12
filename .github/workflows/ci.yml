@@ -61,6 +61,11 @@ jobs:
           POSTGRES_DB_NAME: "myappdb_dev"
           POSTGRES_USER: "postgres"
           POSTGRES_PASSWORD: "devpassword123"
+          # Disable strict rate limits for Newman suites (they fire ~30
+          # rapid requests per collection via pm.sendRequest and would 429
+          # against the strict 5 register / 10 login / 60 general defaults).
+          # Prod/docker-compose keeps strict defaults (true/5/10/60).
+          RATE_LIMIT_ENABLED: "false"
         run: |
           cd server
           pnpm dev &
