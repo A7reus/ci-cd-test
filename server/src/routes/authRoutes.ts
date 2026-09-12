@@ -8,19 +8,36 @@ import {
 } from "../controllers/authController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/roleMiddleware.js";
+import {
+  registerLimiter,
+  loginLimiter,
+  authGeneralLimiter,
+} from "../middleware/rateLimitMiddleware.js";
 
 const authRoutes = new Hono();
 
-// public routes
-authRoutes.post("/register", register);
-authRoutes.post("/login", login);
+// public routes (strict rate limits)
+authRoutes.post("/register", registerLimiter, register);
+authRoutes.post("/login", loginLimiter, login);
 
-// protected routes - authentication required
-authRoutes.get("/me", authMiddleware, getMe);
-authRoutes.get("/profile", authMiddleware, getMe);
+// protected routes - authentication required (loose rate limits)
+authRoutes.get("/me", authGeneralLimiter, authMiddleware, getMe);
+authRoutes.get("/profile", authGeneralLimiter, authMiddleware, getMe);
 
-// RBAC - admin only
-authRoutes.get("/admin", authMiddleware, authorize("admin"), getAdminData);
-authRoutes.get("/users", authMiddleware, authorize("admin"), getAllUsers);
+// RBAC - admin only (loose rate limits)
+authRoutes.get(
+  "/admin",
+  authGeneralLimiter,
+  authMiddleware,
+  authorize("admin"),
+  getAdminData,
+);
+authRoutes.get(
+  "/users",
+  authGeneralLimiter,
+  authMiddleware,
+  authorize("admin"),
+  getAllUsers,
+);
 
 export default authRoutes;

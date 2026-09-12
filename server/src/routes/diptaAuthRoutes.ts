@@ -9,6 +9,11 @@ import {
 import { diptaAuthMiddleware } from "../middleware/diptaAuthMiddleware.js";
 
 import { diptaRoleMiddleware } from "../middleware/diptaRoleMiddleware.js";
+import {
+  registerLimiter,
+  loginLimiter,
+  authGeneralLimiter,
+} from "../middleware/rateLimitMiddleware.js";
 import type { DiptaJwtPayload } from "../types/diptaUserType.js";
 
 const diptaAuthRoutes = new Hono<{
@@ -19,19 +24,19 @@ const diptaAuthRoutes = new Hono<{
 
 diptaAuthRoutes.post(
   "/register",
-
+  registerLimiter,
   registerDipta,
 );
 
 diptaAuthRoutes.post(
   "/login",
-
+  loginLimiter,
   loginDipta,
 );
 
 diptaAuthRoutes.get(
   "/me",
-
+  authGeneralLimiter,
   diptaAuthMiddleware,
 
   getDiptaMe,
@@ -39,6 +44,7 @@ diptaAuthRoutes.get(
 
 diptaAuthRoutes.get(
   "/admin",
+  authGeneralLimiter,
   diptaAuthMiddleware,
   diptaRoleMiddleware("admin"),
   (c) => {
