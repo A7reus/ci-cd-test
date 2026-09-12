@@ -2,6 +2,8 @@ import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
+import { cors } from "hono/cors";
+import { secureHeaders } from "hono/secure-headers";
 import postRoutes from "./routes/postRoutes.js";
 import marufAuthRoutes from "./routes/marufAuthRoutes.js";
 import anindyaAuthRoutes from "./routes/authRoutes.js";
@@ -15,6 +17,12 @@ const app = new Hono();
 initDb();
 
 // Middleware
+app.use(secureHeaders());
+app.use(
+  cors({
+    origin: "*",
+  }),
+);
 app.use(logger());
 
 // Healthcheck
